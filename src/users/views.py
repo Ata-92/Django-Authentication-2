@@ -40,11 +40,31 @@ def register(request):
     }
     return render(request, 'users/register.html', context)
 
+@login_required
 def user_logout(request):
-    pass
+    messages.success(request, "You Logout!")
+    logout(request)
+    return redirect('index')
 
 def user_login(request):
-    pass
+    form = LoginForm(request.POST or None)
+    if form.is_valid():
+        username = form.cleaned_data.get("username")
+        password = form.cleaned_data.get("password")
+        user = authenticate(username=username, password=password)
+        if user:
+            if user.is_active:
+                messages.success(request, "Login successful")
+                login(request, user)
+                return redirect('index')
+            else:
+                messages.error(request, "Account is not active")
+                return render(request, 'users/user_login.html', {"form": form})
+        else:
+            messages.error(request, "Password or Username is wrong!")
+            return render(request, 'users/user_login.html', {"form": form})
+    return render(request, 'users/user_login.html', {"form": form})
 
-def studens(request):
-    pass
+@login_required
+def students(request):
+    return HttpResponse('<h1>Student Admin Page</h1>')
